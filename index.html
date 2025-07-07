@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JLPT N5 Kanji Study</title>
+<link rel="stylesheet" href="themes.css" />
+<style>
+  body { display: flex; flex-direction: column; align-items: center; padding: 1rem; }
+  h1 { margin-bottom: 1rem; text-align: center; }
+  #theme-select { margin-bottom: 1rem; }
+  #kanji-list { width: 100%; max-width: 600px; }
+  .kanji-card { margin-bottom: 1rem; }
+  .reading { margin: 0.3rem 0; font-size: 0.9rem; }
+  .controls { display: flex; justify-content: center; margin-bottom: 1rem; }
+</style>
+</head>
+<body class="theme-1">
+<h1>JLPT N5 Kanji Study</h1>
+
+<div class="controls">
+  <label for="theme-select">Theme:</label>
+  <select id="theme-select">
+    <option value="theme-1">Light</option>
+    <option value="theme-2">Dark Blue</option>
+    <option value="theme-3">Mint</option>
+  </select>
+</div>
+
+<div class="controls">
+  <label for="daily-count">Kanji to study today:</label>
+  <input type="number" id="daily-count" value="3" min="1" max="50" />
+  <button id="start-study" class="button">Start Study</button>
+</div>
+
+<div id="kanji-list"></div>
+
+<script>
+  const kanjiDataUrl = 'kanji.json';
+  let kanjiData = [];
+  let studyQueue = [];
+
+  // Load kanji data
+  fetch(kanjiDataUrl)
+    .then(res => res.json())
+    .then(data => {
+      kanjiData = data;
+      displayKanjiList(kanjiData);
+    });
+
+  // Display kanji cards
+  function displayKanjiList(list) {
+    const container = document.getElementById('kanji-list');
+    container.innerHTML = '';
+    list.forEach(k => {
+      const card = document.createElement('div');
+      card.className = 'glass-card kanji-card';
+
+      const kanjiElem = document.createElement('h2');
+      kanjiElem.textContent = k.kanji;
+      card.appendChild(kanjiElem);
+
+      const kun = document.createElement('div');
+      kun.className = 'reading';
+      kun.textContent = 'Kunyomi: ' + k.kunyomi.join(', ');
+      card.appendChild(kun);
+
+      const on = document.createElement('div');
+      on.className = 'reading';
+      on.textContent = 'Onyomi: ' + k.onyomi.join(', ');
+      card.appendChild(on);
+
+      const radicals = document.createElement('div');
+      radicals.className = 'reading';
+      radicals.textContent = 'Radicals: ' + k.radicals.join(', ');
+      card.appendChild(radicals);
+
+      const storyBtn = document.createElement('button');
+      storyBtn.textContent = 'Generate Story';
+      storyBtn.className = 'button';
+      storyBtn.onclick = () => {
+        alert(generateAIStory(k));
+      };
+      card.appendChild(storyBtn);
+
+      container.appendChild(card);
+    });
+  }
+
+  // Mock AI story generator
+  function generateAIStory(kanji) {
+    return `Remember the kanji '${kanji.kanji}' by picturing its radicals: ${kanji.radicals.join(', ')}. Think of a story combining them to create its meaning.`;
+  }
+
+  // Theme switcher
+  document.getElementById('theme-select').addEventListener('change', e => {
+    document.body.className = e.target.value;
+  });
+
+  // Start study session (simplified)
+  document.getElementById('start-study').addEventListener('click', () => {
+    const count = parseInt(document.getElementById('daily-count').value, 10);
+    studyQueue = kanjiData.slice(0, count);
+    displayKanjiList(studyQueue);
+  });
+</script>
+
+</body>
+</html>
